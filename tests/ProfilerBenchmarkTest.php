@@ -74,24 +74,24 @@ class ProfilerBenchmarkTest extends TestCase
     {
         $benchmark = new ProfilerBenchmark();
         $x = 0;
-        $collect = collect();
+        $collect = [];
         $benchmark->start('initialize');
         for ($i = 0; $i < 99999; $i++) {
             $x += $i;
-            $collect->push($x);
+            $collect[] = $x;
         }
         // code here
         $benchmark->checkpoint('Get start product list');
         for ($i = 0; $i < 99999; $i++) {
             $x += $i;
-            $collect->push($x);
+            $collect[] = $x;
         }
         // code here
         $benchmark->checkpoint('Parse product list');
         // code here
         for ($i = 0; $i < 99999; $i++) {
             $x += $i;
-            $collect->push($x);
+            $collect[] = $x;
         }
 
         $result = $benchmark->getBenchmark('Finish');

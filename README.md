@@ -1,6 +1,12 @@
 # Profiler Benchmark
 
-The ProfilerBenchmark library is used for benchmarking and profiling Laravel code. It is used to measure the performance of code. It is a simple and lightweight library. 
+[![License](http://poser.pugx.org/riod94/profiler-benchmark/license)](https://packagist.org/packages/riod94/profiler-benchmark)
+[![Latest Stable Version](http://poser.pugx.org/riod94/profiler-benchmark/v)](https://packagist.org/packages/riod94/profiler-benchmark)
+[![Total Downloads](http://poser.pugx.org/riod94/profiler-benchmark/downloads)](https://packagist.org/packages/riod94/profiler-benchmark)
+[![PHP Version Require](http://poser.pugx.org/riod94/profiler-benchmark/require/php)](https://packagist.org/packages/riod94/profiler-benchmark)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3093900130f14a219a168abb530b2a9c)](https://app.codacy.com/gh/riod94/profiler-benchmark/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
+The ProfilerBenchmark library is used for benchmarking and profiling Laravel code. It is used to measure the performance of code. It is a simple and lightweight library.
 
 ## Installation
 
