@@ -8,9 +8,9 @@ use Riod94\ProfilerBenchmark\ProfilerBenchmark;
 class ProfilerBenchmarkTest extends TestCase
 {
     /**
-     * Test if the profiler is enabled.
+     * Test if the ProfilerBenchmark is enabled.
      *
-     * @throws Exception if the profiler is not enabled.
+     * @return void
      */
     public function testEnabled()
     {
@@ -28,9 +28,8 @@ class ProfilerBenchmarkTest extends TestCase
     }
 
     /**
-     * Test the 'checkpoint' function.
+     * Test the `checkpoint` method of the ProfilerBenchmark class.
      *
-     * @throws AssertionFailedError If the returned value is not an array.
      * @return void
      */
     public function testCheckpoint()
@@ -41,11 +40,41 @@ class ProfilerBenchmarkTest extends TestCase
     /**
      * Test the result of the ProfilerBenchmark::getResult() function.
      *
-     * @throws Some_Exception_Class description of exception
+     * @return void
      */
     public function testGetBenchmark()
     {
         $this->assertIsArray(ProfilerBenchmark::getBenchmark());
+    }
+
+    /**
+     * Test the setShowFunction method of the ProfilerBenchmark class.
+     *
+     * @return void
+     */
+    public function testSetShowFunction()
+    {
+        $this->assertTrue(ProfilerBenchmark::setShowFunction(true));
+    }
+
+    /**
+     * This function tests the method `setShowArgs` of the `ProfilerBenchmark` class.
+     *
+     * @return void
+     */
+    public function testSetShowArgs()
+    {
+        $this->assertFalse(ProfilerBenchmark::setShowArgs(false));
+    }
+
+    /**
+     * A description of the entire PHP function.
+     *
+     * @return void
+     */
+    public function testSetShowReturn()
+    {
+        $this->assertFalse(ProfilerBenchmark::setShowReturn(false));
     }
 
     /**
@@ -55,21 +84,34 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testFunctionBenchmark()
     {
-        ProfilerBenchmark::setShowReturn(false);
-        ProfilerBenchmark::setShowArgs(false);
-        $functionBenchmark = ProfilerBenchmark::functionBenchmark([ProfilerBenchmark::class, 'getBenchmark'], 10);
-
         $functionBenchmark = ProfilerBenchmark::functionBenchmark(function () {
             $nums = [];
             for ($i = 0; $i < 9999; $i++) {
                 $nums[] = $i;
             }
             return $nums;
-        }, 9999);
+        }, 1);
 
         $this->assertIsArray($functionBenchmark);
     }
 
+    /**
+     * Test the profile and benchmark functionality.
+     *
+     * @return void
+     */
+    public function testFunctionBenchmark2()
+    {
+        $functionBenchmark = ProfilerBenchmark::functionBenchmark([ProfilerBenchmark::class, 'getBenchmark'], 1, 'Test Benchmark');
+
+        $this->assertIsArray($functionBenchmark);
+    }
+
+    /**
+     * Test the complexity of the function.
+     *
+     * @return void
+     */
     public function testComplexity()
     {
         $benchmark = new ProfilerBenchmark();

@@ -13,79 +13,107 @@ class ProfilerBenchmark
      */
     public function __construct()
     {
+        // Set the start time to the current microtime.
         self::setStartTime(microtime(true));
     }
 
     /**
-     * Mengatur status ProfilerHelper.
+     * Enable or disable the feature.
      *
-     * @param bool $enabled True jika ProfilerHelper diaktifkan, false jika tidak.
+     * @param bool $enabled Whether the feature should be enabled or disabled.
+     *
+     * @return bool The new enabled status.
      */
-    public static function enabled(bool $enabled = true)
+    public static function enabled(bool $enabled = true): bool
     {
+        // Set the enabled status
         self::setEnabled($enabled);
 
+        // Return the new enabled status
         return self::$enabled;
     }
 
     /**
-     * Memulai benchmark.
+     * Start the benchmark process.
      *
-     * @param string $label Penanda atau penamaan benchmark.
+     * @param string|null $label The label for the benchmark step.
+     * @return array The benchmark steps.
      */
-    public static function start(string $label = null)
+    public static function start(string|null $label = null): array
     {
-        if (! self::isEnabled()) {
-            return;
+        // Check if the benchmarking is enabled.
+        if (!self::isEnabled()) {
+            return [];
         }
-        self::$steps = []; // Reset langkah-langkah benchmark
+
+        // Reset the benchmark steps.
+        self::$steps = [];
+
+        // Create a checkpoint for the current step.
         self::checkpoint($label);
 
+        // Return the benchmark steps.
         return self::$steps;
     }
 
     /**
-     * Menyimpan langkah-langkah benchmark.
+     * Logs a checkpoint with the given label.
      *
-     * @param string $label Penanda atau penamaan langkah benchmark.
+     * @param null|string $label The label for the checkpoint.
+     *
+     * @return array
      */
-    public static function checkpoint($label = null)
+    public static function checkpoint(null|string $label = null): array
     {
+        // Check if the checkpoint feature is enabled.
         if (! self::isEnabled()) {
-            return;
+            return [];
         }
 
-        $step = [
-            'label' => $label,
-            'time' => microtime(true) - self::$startTime,
-            'memory' => memory_get_usage(true),
-        ];
+        // Calculate the time elapsed since the start of the program.
+        $time = microtime(true) - self::getStartTime();
 
-        self::addStep($step);
+        // Get the current memory usage.
+        $memory = memory_get_usage(true);
 
-        return $step;
+        // Add a step to the checkpoint.
+        return self::addStep($time, $memory, $label);
     }
 
     /**
-     * Menghasilkan hasil benchmark.
+     * Retrieves benchmark data.
      *
-     * @return array Data benchmark.
+     * @param string|null $label The label for the benchmark data.
+     * @return array The benchmark data.
      */
-    public static function getBenchmark($label = null)
+    public static function getBenchmark(string|null $label = null): array
     {
+        // Check if the benchmarking feature is enabled
+        if (!self::isEnabled()) {
+            // Return an empty array if benchmarking is disabled
+            return [];
+        }
+
+        // Add a checkpoint for the current label
         self::checkpoint($label);
+
+        // Initialize an empty array to store the benchmark steps
         $steps = [];
+
+        // Loop through each benchmark step and format the step data
         foreach (self::getSteps() as $step) {
             $stepData = [
                 'label' => $step['label'],
                 'time' => self::formatTime($step['time'] * 1000),
                 'memory' => self::formatBytes($step['memory']),
             ];
+            // Add the step data to the steps array
             $steps[] = $stepData;
         }
 
+        // Format and store the benchmark data
         $benchmarkData = [
-            'total_time' => self::formatTime((microtime(true) - self::$startTime) * 1000),
+            'total_time' => self::formatTime((microtime(true) - self::getStartTime()) * 1000),
             'total_memory' => self::getTotalMemoryUsage(),
             'average_memory' => self::getAverageMemoryUsage(),
             'min_memory' => self::getMinMemoryUsage(),
@@ -93,50 +121,51 @@ class ProfilerBenchmark
             'steps' => $steps,
         ];
 
+        // Return the benchmark data
         return $benchmarkData;
     }
 
     /**
-     * Melakukan profiling dan pengujian kinerja pada sebuah fungsi.
+     * Run a benchmark on a given function.
      *
-     * @param callable $function Fungsi yang akan diprofil dan diuji kinerjanya.
-     * @param int $iterations Jumlah berapa kali fungsi akan dieksekusi.
-     * @param mixed ...$args Argumen yang akan diteruskan ke fungsi.
-     *
-     * @return array Array yang berisi data profil.
+     * @param callable $function The function to benchmark.
+     * @param int $iterations The number of iterations to run the benchmark.
+     * @param mixed ...$args The arguments to pass to the function.
+     * @return array The benchmark data.
      */
-    public static function functionBenchmark(callable $function, $iterations = 1, ...$args)
+    public static function functionBenchmark(callable $function, int $iterations = 1, mixed ...$args): array
     {
-        if (! self::$enabled) {
+        if (!self::isEnabled()) {
             return [];
         }
-        $executionTimes = []; // Array untuk menyimpan waktu eksekusi setiap iterasi
-        $totalTime = 0; // Total waktu eksekusi dari semua iterasi
+
+        $executionTimes = []; // Array to store the execution time for each iteration
+        $totalTime = 0; // Total execution time of all iterations
 
         for ($i = 0; $i < $iterations; $i++) {
-            $startTime = microtime(true); // Mendapatkan waktu saat ini dalam mikrodetik
-            $return = call_user_func_array($function, $args); // Memanggil fungsi yang diberikan dengan argumen yang diberikan
-            $endTime = microtime(true); // Mendapatkan waktu saat ini dalam mikrodetik
-            $executionTime = ($endTime - $startTime) * 1000; // Menghitung waktu eksekusi dalam milidetik
-            $executionTimes[] = $executionTime; // Menambahkan waktu eksekusi ke dalam array
-            $totalTime += $executionTime; // Memperbarui total waktu eksekusi
+            $startTime = self::setStartTime(microtime(true)); // Get the current time in microseconds
+            $return = $function(...$args); // Call the given function with the given arguments using the variadic call operator
+            $endTime = microtime(true); // Get the current time in microseconds
+            $executionTime = ($endTime - $startTime) * 1000; // Calculate the execution time in milliseconds
+            $executionTimes[] = $executionTime; // Add the execution time to the array
+            $totalTime += $executionTime; // Update the total execution time
         }
 
-        $averageTime = array_sum($executionTimes) / count($executionTimes); // Menghitung rata-rata waktu eksekusi
-        $minTime = min($executionTimes); // Mencari waktu eksekusi minimum
-        $maxTime = max($executionTimes); // Mencari waktu eksekusi maksimum
+        $averageTime = array_sum($executionTimes) / count($executionTimes); // Calculate the average execution time
+        $minTime = min($executionTimes); // Find the minimum execution time
+        $maxTime = max($executionTimes); // Find the maximum execution time
 
-        $profileData = [
+        $benchmarkData = [
             'iterations' => $iterations,
-            'total_time' => self::formatTime($totalTime), // Mengformat waktu eksekusi total
-            'average_time' => self::formatTime($averageTime), // Mengformat waktu eksekusi rata-rata
-            'min_time' => self::formatTime($minTime), // Mengformat waktu eksekusi minimum
-            'max_time' => self::formatTime($maxTime), // Mengformat waktu eksekusi maksimum
+            'total_time' => self::formatTime($totalTime), // Format the total execution time
+            'average_time' => self::formatTime($averageTime), // Format the average execution time
+            'min_time' => self::formatTime($minTime), // Format the minimum execution time
+            'max_time' => self::formatTime($maxTime), // Format the maximum execution time
             'function' => self::$showFunction ? $function : null,
             'args' => self::$showArgs ? json_encode($args) : null,
             'return' => self::$showReturn ? json_encode($return) : null,
         ];
 
-        return $profileData; // Mengembalikan data profil
+        return $benchmarkData; // Return the benchmark data
     }
 }
