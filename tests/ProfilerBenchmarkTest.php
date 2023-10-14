@@ -58,7 +58,7 @@ class ProfilerBenchmarkTest extends TestCase
         ProfilerBenchmark::setShowReturn(false);
         ProfilerBenchmark::setShowArgs(false);
         $functionBenchmark = ProfilerBenchmark::functionBenchmark([ProfilerBenchmark::class, 'getBenchmark'], 10);
-        dd($functionBenchmark);
+
         $functionBenchmark = ProfilerBenchmark::functionBenchmark(function () {
             $nums = [];
             for ($i = 0; $i < 9999; $i++) {
@@ -66,7 +66,7 @@ class ProfilerBenchmarkTest extends TestCase
             }
             return $nums;
         }, 9999);
-        dd($functionBenchmark);
+
         $this->assertIsArray($functionBenchmark);
     }
 
