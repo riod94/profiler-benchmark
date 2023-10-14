@@ -99,7 +99,7 @@ array:8 [
 ]
 
 // OR you can benchmark a function of a class with arguments
-$profileData1 = ProfilerBenchmark::classBenchmark([BankAccount::class, 'getBalance'], 100, $args);
+$profileData1 = ProfilerBenchmark::functionBenchmark([BankAccount::class, 'getBalance'], 100, $args);
 
 // Display benchmark results and profile data
 var_dump($profileData1);
