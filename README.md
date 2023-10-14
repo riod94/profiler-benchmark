@@ -7,7 +7,7 @@ The ProfilerBenchmark library is used for benchmarking and profiling PHP code.
 You can install this library using Composer. Run the following command in the terminal:
 
 ```bash
-composer require nusanet/logger
+composer require riod94/profiler-benchmark
 ```
 
 This package register the provider automatically, [See laravel package discover](https://laravel.com/docs/10.x/packages#package-discovery).
@@ -138,7 +138,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ### Security
 
-If you discover any security related issues, please email anc@nusa.net.id instead of using the issue tracker.
+If you discover any security related issues, please email riyo.s94@gmail.com instead of using the issue tracker.
 
 ## Credits
 
