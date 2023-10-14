@@ -1,0 +1,53 @@
+{
+    "name": "riod94/profiler-benchmark",
+    "description": "simple timers and benchmarking",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "benchmark",
+        "timer",
+        "profiler",
+        "benchmarking",
+        "profiling"
+    ],
+    "authors": [
+        {
+            "name": "Rio D",
+            "email": "riyo.s94@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.6",
+        "illuminate/support": ">=6.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": ">=7.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Riod94\\ProfilerBenchmark\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Riod94\\ProfilerBenchmark\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Riod94\\ProfilerBenchmark\\ProfilerBenchmarkServiceProvider"
+            ],
+            "aliases": {
+                "ProfilerBenchmark": "Riod94\\ProfilerBenchmark\\Facades\\ProfilerBenchmarkFacade"
+            }
+        }
+    }
+}
