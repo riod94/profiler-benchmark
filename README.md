@@ -1,6 +1,6 @@
 # Profiler Benchmark
 
-The ProfilerBenchmark library is used for benchmarking and profiling PHP code.
+The ProfilerBenchmark library is used for benchmarking and profiling Laravel code. It is used to measure the performance of code. It is a simple and lightweight library. 
 
 ## Installation
 
@@ -20,7 +20,7 @@ Here is an example of how to use the ProfilerBenchmark library:
 use Riod94\ProfilerBenchmark\ProfilerBenchmark;
 
 // Disable ProfilerBenchmark if your code running in production
-ProfilerBenchmark::enabled(false);
+ProfilerBenchmark::enabled(env('APP_ENV') !== 'production');
 
 // Start benchmarking
 ProfilerBenchmark::start('initialize');
@@ -120,7 +120,7 @@ array:8 [
 ]
 ```
 
-Thatâ€™s it! enjoy :D.
+That's it! enjoy :D.
 
 ### Testing
 

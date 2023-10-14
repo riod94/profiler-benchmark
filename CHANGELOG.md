@@ -2,7 +2,7 @@
 
 All notable changes to `ProfilerBenchmark` will be documented in this file
 
-## 0.1.0 - 2023-10-14
+## 1.0.0 - 2023-10-14
 
 -  initial release
 -  added `Riod94\ProfilerBenchmark` package
