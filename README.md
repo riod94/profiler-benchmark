@@ -1,5 +1,7 @@
 # Profiler Benchmark
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c053771055704bab90ce85a5fbd21b68)](https://app.codacy.com/gh/riod94/profiler-benchmark?utm_source=github.com&utm_medium=referral&utm_content=riod94/profiler-benchmark&utm_campaign=Badge_Grade)
+
 The ProfilerBenchmark library is used for benchmarking and profiling Laravel code. It is used to measure the performance of code. It is a simple and lightweight library. 
 
 ## Installation
