@@ -2,6 +2,7 @@
 
 namespace Riod94\ProfilerBenchmark;
 
+use ReflectionClass;
 use Riod94\ProfilerBenchmark\Traits\ProfilerTrait;
 
 class ProfilerBenchmark
@@ -9,11 +10,12 @@ class ProfilerBenchmark
     use ProfilerTrait;
 
     /**
-     * Constructs a new instance of the class.
+     * Constructor for the class.
+     * Sets the start time of the object.
      */
     public function __construct()
     {
-        // Set the start time to the current microtime.
+        // Set the start time using the current microtime
         self::setStartTime(microtime(true));
     }
 
@@ -42,9 +44,11 @@ class ProfilerBenchmark
     public static function start(string|null $label = null): array
     {
         // Check if the benchmarking is enabled.
-        if (!self::isEnabled()) {
+        if (! self::$enabled) {
             return [];
         }
+
+        self::setStartTime(microtime(true));
 
         // Reset the benchmark steps.
         self::$steps = [];
@@ -66,18 +70,12 @@ class ProfilerBenchmark
     public static function checkpoint(null|string $label = null): array
     {
         // Check if the checkpoint feature is enabled.
-        if (! self::isEnabled()) {
+        if (! self::$enabled) {
             return [];
         }
 
-        // Calculate the time elapsed since the start of the program.
-        $time = microtime(true) - self::getStartTime();
-
-        // Get the current memory usage.
-        $memory = memory_get_usage(true);
-
         // Add a step to the checkpoint.
-        return self::addStep($time, $memory, $label);
+        return self::addStep($label);
     }
 
     /**
@@ -89,7 +87,7 @@ class ProfilerBenchmark
     public static function getBenchmark(string|null $label = null): array
     {
         // Check if the benchmarking feature is enabled
-        if (!self::isEnabled()) {
+        if (! self::$enabled) {
             // Return an empty array if benchmarking is disabled
             return [];
         }
@@ -101,10 +99,10 @@ class ProfilerBenchmark
         $steps = [];
 
         // Loop through each benchmark step and format the step data
-        foreach (self::getSteps() as $step) {
+        foreach (self::$steps as $step) {
             $stepData = [
                 'label' => $step['label'],
-                'time' => self::formatTime($step['time'] * 1000),
+                'time' => self::formatTime($step['time']),
                 'memory' => self::formatBytes($step['memory']),
             ];
             // Add the step data to the steps array
@@ -113,7 +111,7 @@ class ProfilerBenchmark
 
         // Format and store the benchmark data
         $benchmarkData = [
-            'total_time' => self::formatTime((microtime(true) - self::getStartTime()) * 1000),
+            'total_time' => self::formatTime(microtime(true) - self::$startTime),
             'total_memory' => self::getTotalMemoryUsage(),
             'average_memory' => self::getAverageMemoryUsage(),
             'min_memory' => self::getMinMemoryUsage(),
@@ -128,44 +126,103 @@ class ProfilerBenchmark
     /**
      * Run a benchmark on a given function.
      *
-     * @param callable $function The function to benchmark.
+     * @param callable|array $function The function to benchmark.
      * @param int $iterations The number of iterations to run the benchmark.
      * @param mixed ...$args The arguments to pass to the function.
      * @return array The benchmark data.
      */
-    public static function functionBenchmark(callable $function, int $iterations = 1, mixed ...$args): array
+    public static function functionBenchmark(callable|array $function, int $iterations = 1, mixed ...$args): array
     {
-        if (!self::isEnabled()) {
+        // If benchmarking is disabled, return an empty array
+        if (! self::$enabled) {
             return [];
         }
+
+        // Start the function benchmark iteration
+        self::checkpoint('Start Function Benchmark Iteration');
 
         $executionTimes = []; // Array to store the execution time for each iteration
         $totalTime = 0; // Total execution time of all iterations
 
+        $className = null;
+        $methodName = null;
+
+        // If the function is an array with two elements, assign the class name and method name
+        if (is_array($function) && count($function) === 2) {
+            $className = $function[0];
+            $methodName = $function[1];
+        }
+
         for ($i = 0; $i < $iterations; $i++) {
             $startTime = self::setStartTime(microtime(true)); // Get the current time in microseconds
-            $return = $function(...$args); // Call the given function with the given arguments using the variadic call operator
+
+            // Call the function using reflection method instead of direct invocation
+            $return = self::callReflectionMethod($className, $methodName, $args);
+
             $endTime = microtime(true); // Get the current time in microseconds
-            $executionTime = ($endTime - $startTime) * 1000; // Calculate the execution time in milliseconds
+            $executionTime = ($endTime - $startTime); // Calculate the execution time
             $executionTimes[] = $executionTime; // Add the execution time to the array
             $totalTime += $executionTime; // Update the total execution time
         }
+
+        // Finish the function benchmark iteration
+        self::checkpoint('Finish Function Benchmark Iteration');
 
         $averageTime = array_sum($executionTimes) / count($executionTimes); // Calculate the average execution time
         $minTime = min($executionTimes); // Find the minimum execution time
         $maxTime = max($executionTimes); // Find the maximum execution time
 
         $benchmarkData = [
+            'function' => self::$showFunction ? $function : null, // Include the function in the benchmark data if showFunction is enabled
+            'args' => self::$showArgs ? json_encode($args) : null, // Include the arguments in the benchmark data if showArgs is enabled
+            'return' => self::$showReturn ? json_encode($return) : null, // Include the return value in the benchmark data if showReturn is enabled
+            'steps' => self::$showSteps ? json_encode(self::$steps) : null, // Include the steps in the benchmark data
             'iterations' => $iterations,
             'total_time' => self::formatTime($totalTime), // Format the total execution time
             'average_time' => self::formatTime($averageTime), // Format the average execution time
             'min_time' => self::formatTime($minTime), // Format the minimum execution time
             'max_time' => self::formatTime($maxTime), // Format the maximum execution time
-            'function' => self::$showFunction ? $function : null,
-            'args' => self::$showArgs ? json_encode($args) : null,
-            'return' => self::$showReturn ? json_encode($return) : null,
+            'total_memory' => self::getTotalMemoryUsage(), // Get the total memory usage
+            'average_memory' => self::getAverageMemoryUsage(), // Get the average memory usage
+            'min_memory' => self::getMinMemoryUsage(), // Get the minimum memory usage
+            'max_memory' => self::getMaxMemoryUsage(), // Get the maximum memory usage
         ];
 
-        return $benchmarkData; // Return the benchmark data
+        // Return the benchmark data
+        return $benchmarkData;
     }
+
+    /**
+     * Calls a method using reflection.
+     *
+     * @param string $className The name of the class.
+     * @param string $methodName The name of the method.
+     * @param array $args The arguments to pass to the method.
+     * @return mixed|null The result of the method call or null if the method does not exist.
+     */
+    private static function callReflectionMethod($className, $methodName, $args)
+    {
+        // Check if the class name and method name are provided
+        if ($className && $methodName) {
+            $reflectionClass = new ReflectionClass($className);
+
+            // Check if the method exists in the class
+            if ($reflectionClass->hasMethod($methodName)) {
+                $reflectionMethod = $reflectionClass->getMethod($methodName);
+                $reflectionMethod->setAccessible(true); // Allow access to protected method
+
+                $instance = null;
+                // Create an instance of the class if the method is not static
+                if (!$reflectionMethod->isStatic()) {
+                    $instance = $reflectionClass->newInstanceWithoutConstructor();
+                }
+
+                // Call the method with the provided arguments
+                return $reflectionMethod->invokeArgs($instance, $args);
+            }
+        }
+
+        return null;
+    }
+
 }

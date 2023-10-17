@@ -10,6 +10,7 @@ trait ProfilerTrait
     private static $showFunction = true;
     private static $showArgs = true;
     private static $showReturn = true;
+    private static $showSteps = true;
 
     /**
      * Set the value to determine whether the function should be shown.
@@ -51,6 +52,18 @@ trait ProfilerTrait
     }
 
     /**
+     * Sets the value of the $showSteps property.
+     *
+     * @param bool $showSteps The new value for the $showSteps property.
+     */
+    public static function setShowSteps(bool $showSteps): bool
+    {
+        self::$showSteps = $showSteps;
+
+        return self::$showSteps;
+    }
+
+    /**
      * Set the enabled state.
      *
      * @param bool $enabled The new enabled state.
@@ -63,84 +76,67 @@ trait ProfilerTrait
     }
 
     /**
-     * Check if the feature is enabled.
-     *
-     * @return bool Returns true if the feature is enabled, false otherwise.
-     */
-    private static function isEnabled(): bool
-    {
-        return self::$enabled;
-    }
-
-    /**
-     * Returns the start time.
-     *
-     * @return int The start time.
-     */
-    private static function getStartTime(): int
-    {
-        return self::$startTime;
-    }
-
-    /**
      * Set the start time for the function.
      *
-     * @param int $startTime The start time to be set.
-     * @return int The start time that was set.
+     * @param float $startTime The start time to be set.
+     * @return float The start time that was set.
      */
-    private static function setStartTime(int $startTime): int
+    private static function setStartTime(float $startTime): float
     {
-        // Set the start time
         self::$startTime = $startTime;
 
-        // Return the start time
         return self::$startTime;
     }
 
     /**
-     * Retrieves the steps.
+     * Adds a step to the array of steps.
      *
-     * @return array The steps.
+     * @param string|null $label The label for the step. If null, a default label will be used.
+     *
+     * @return array The added step.
      */
-    private static function getSteps(): array
+    private static function addStep(string $label = null): array
     {
-        return self::$steps;
-    }
+        // Get the memory limit and parse it into bytes
+        $memoryLimit = ini_get('memory_limit');
+        $memoryLimitBytes = self::parseMemoryLimit($memoryLimit);
 
-    /**
-     * Adds a step to the collection.
-     *
-     * @param int $time The time taken for the step.
-     * @param int|float $memory The memory used for the step.
-     * @param string|null $label The label for the step. If not provided, a default label will be used.
-     *
-     * @return array The step that was added.
-     */
-    private static function addStep(int $time, int|float $memory, string $label = null): array
-    {
-        // Create a step array with the provided time, memory, and label.
+        // Get the average memory usage and parse it into bytes
+        $averageMemoryUsage = self::getAverageMemoryUsage();
+        $averageMemoryUsageBytes = self::parseMemoryLimit($averageMemoryUsage);
+
+        // Get the current memory usage
+        $memory = memory_get_usage(true);
+
+        // Check if there is enough memory available
+        if (($memoryLimitBytes - $memory) > $averageMemoryUsageBytes) {
+            // Free up memory if necessary
+            self::freeUpMemory($memory, $memoryLimitBytes);
+        }
+
+        // Create the step array
         $step = [
             'label' => $label ?? 'Step ' . count(self::$steps),
-            'time' => $time,
-            'memory' => $memory,
+            'time' => (microtime(true) - self::$startTime),
+            'memory' => memory_get_usage(),
         ];
 
-        // Add the step to the collection.
+        // Add the step to the array of steps
         self::$steps[] = $step;
 
-        // Return the added step.
+        // Return the added step
         return $step;
     }
 
     /**
      * Converts milliseconds to seconds.
      *
-     * @param int $milliseconds The number of milliseconds to convert.
+     * @param float $milliseconds The number of milliseconds to convert.
      * @return float The equivalent number of seconds.
      */
-    private static function formatTime(int $milliseconds): float
+    private static function formatTime(float $milliseconds): float
     {
-        $seconds = round($milliseconds / 1000, 2);
+        $seconds = round($milliseconds, 2);
 
         return $seconds;
     }
@@ -234,19 +230,67 @@ trait ProfilerTrait
         // Define the units for the byte sizes.
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
-        // Make sure the byte size is non-negative.
-        $bytes = max($bytes, 0);
+        // Get the total number of units.
+        $totalUnits = count($units);
 
-        // Calculate the power of 1024 to use for the units.
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        // Loop through the units until the bytes value is less than or equal to 1024.
+        for ($i = 0; $i < $totalUnits && $bytes > 1024; $i++) {
+            $bytes /= 2 ** 10;
+        }
 
-        // Limit the power to the maximum unit size.
-        $pow = min($pow, count($units) - 1);
+        // Round the bytes value to the specified precision and concatenate it with the unit.
+        return round($bytes, $precision) . $units[$i];
+    }
 
-        // Divide the byte size by the appropriate power of 1024.
-        $bytes /= pow(1024, $pow);
+    /**
+     * Parses the memory limit value and converts it to bytes.
+     *
+     * @param string $memoryLimit The memory limit value to parse.
+     * @return int The memory limit value in bytes.
+     */
+    private static function parseMemoryLimit(string $memoryLimit): int
+    {
+        // Convert the memory limit value to an integer
+        $value = (int) $memoryLimit;
 
-        // Round the byte size to the specified precision and add the unit.
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        // Get the unit of the memory limit value (last character)
+        $unit = strtolower(substr($memoryLimit, -1));
+
+        // Convert the memory limit value to bytes based on the unit
+        switch ($unit) {
+            case 'g':
+                $value *= 1024;
+                // fallthrough
+                // no break
+            case 'm':
+                $value *= 1024;
+                // fallthrough
+                // no break
+            case 'k':
+                $value *= 1024;
+                break;
+        }
+
+        // Return the memory limit value in bytes
+        return $value;
+    }
+
+    /**
+     * Frees up memory by removing old steps from the array.
+     *
+     * @param int $estimatedMemoryUsage The estimated memory usage.
+     * @param int $memoryLimit The memory limit.
+     * @return void
+     */
+    private static function freeUpMemory(int $estimatedMemoryUsage, int $memoryLimit): void
+    {
+        // Remove old steps from the array until the estimated memory usage is below the memory limit
+        while ($estimatedMemoryUsage >= $memoryLimit && count(self::$steps) > 0) {
+            // Get the oldest step and remove it from the array
+            $oldestStep = array_shift(self::$steps);
+
+            // Subtract the memory usage of the oldest step from the estimated memory usage
+            $estimatedMemoryUsage -= $oldestStep['memory'];
+        }
     }
 }
