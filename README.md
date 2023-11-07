@@ -148,7 +148,7 @@ If you discover any security related issues, please email riyo.s94@gmail.com ins
 
 ## Credits
 
--  [riod94](https://github.com/riod94)
+- [riod94](https://github.com/riod94)
 
 ## License
 

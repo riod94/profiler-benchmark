@@ -225,7 +225,7 @@ trait ProfilerTrait
      * @param int $precision The number of decimal places to round to (default is 2).
      * @return string The formatted string.
      */
-    private static function formatBytes(int|float $bytes, int $precision = 2): string
+    private static function formatBytes($bytes, int $precision = 2): string
     {
         // Define the units for the byte sizes.
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];

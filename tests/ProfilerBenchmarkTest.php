@@ -14,7 +14,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testEnabled()
     {
-        $this->assertTrue(ProfilerBenchmark::enabled());
+        $profiler = new ProfilerBenchmark();
+        $this->assertTrue($profiler->enabled());
     }
 
     /**
@@ -24,7 +25,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testStart()
     {
-        $this->assertIsArray(ProfilerBenchmark::start());
+        $profiler = new ProfilerBenchmark();
+        $this->assertIsArray($profiler->start('Initialize'));
     }
 
     /**
@@ -34,7 +36,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testCheckpoint()
     {
-        $this->assertIsArray(ProfilerBenchmark::checkpoint());
+        $profiler = new ProfilerBenchmark();
+        $this->assertIsArray($profiler->checkpoint('Get start product list'));
     }
 
     /**
@@ -44,7 +47,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testGetBenchmark()
     {
-        $this->assertIsArray(ProfilerBenchmark::getBenchmark());
+        $profiler = new ProfilerBenchmark();
+        $this->assertIsArray($profiler->getBenchmark('Finish'));
     }
 
     /**
@@ -54,7 +58,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testSetShowFunction()
     {
-        $this->assertTrue(ProfilerBenchmark::setShowFunction(true));
+        $profiler = new ProfilerBenchmark();
+        $this->assertTrue($profiler->setShowFunction(true));
     }
 
     /**
@@ -64,7 +69,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testSetShowArgs()
     {
-        $this->assertFalse(ProfilerBenchmark::setShowArgs(false));
+        $profiler = new ProfilerBenchmark();
+        $this->assertFalse($profiler->setShowArgs(false));
     }
 
     /**
@@ -74,7 +80,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testSetShowReturn()
     {
-        $this->assertFalse(ProfilerBenchmark::setShowReturn(false));
+        $profiler = new ProfilerBenchmark();
+        $this->assertFalse($profiler->setShowReturn(false));
     }
 
     /**
@@ -84,7 +91,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testFunctionBenchmark()
     {
-        $functionBenchmark = ProfilerBenchmark::functionBenchmark(function () {
+        $profiler = new ProfilerBenchmark();
+        $functionBenchmark = $profiler->functionBenchmark(function () {
             $nums = [];
             for ($i = 0; $i < 9999; $i++) {
                 $nums[] = $i;
@@ -102,7 +110,8 @@ class ProfilerBenchmarkTest extends TestCase
      */
     public function testFunctionBenchmark2()
     {
-        $functionBenchmark = ProfilerBenchmark::functionBenchmark([ProfilerBenchmark::class, 'getBenchmark'], 1, 'Test Benchmark');
+        $profiler = new ProfilerBenchmark();
+        $functionBenchmark = $profiler->functionBenchmark([ProfilerBenchmark::class, 'getBenchmark'], 1);
 
         $this->assertIsArray($functionBenchmark);
     }

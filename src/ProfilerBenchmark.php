@@ -41,7 +41,7 @@ class ProfilerBenchmark
      * @param string|null $label The label for the benchmark step.
      * @return array The benchmark steps.
      */
-    public static function start(string|null $label = null): array
+    public static function start(string $label = null): array
     {
         // Check if the benchmarking is enabled.
         if (! self::$enabled) {
@@ -67,7 +67,7 @@ class ProfilerBenchmark
      *
      * @return array
      */
-    public static function checkpoint(null|string $label = null): array
+    public static function checkpoint(string $label = null): array
     {
         // Check if the checkpoint feature is enabled.
         if (! self::$enabled) {
@@ -84,7 +84,7 @@ class ProfilerBenchmark
      * @param string|null $label The label for the benchmark data.
      * @return array The benchmark data.
      */
-    public static function getBenchmark(string|null $label = null): array
+    public static function getBenchmark(string $label = null): array
     {
         // Check if the benchmarking feature is enabled
         if (! self::$enabled) {
@@ -131,7 +131,7 @@ class ProfilerBenchmark
      * @param mixed ...$args The arguments to pass to the function.
      * @return array The benchmark data.
      */
-    public static function functionBenchmark(callable|array $function, int $iterations = 1, mixed ...$args): array
+    public static function functionBenchmark($function, int $iterations = 1, mixed ...$args): array
     {
         // If benchmarking is disabled, return an empty array
         if (! self::$enabled) {
