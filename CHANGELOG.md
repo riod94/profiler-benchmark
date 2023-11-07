@@ -5,6 +5,7 @@ All notable changes to `ProfilerBenchmark` will be documented in this file
 ## 1.1.1 - 2023-11-07
 
 - Bugfix: parameter types in `ProfilerBenchmark`
+- update `ProfilerBenchmarkTests`
 
 ## 1.1.0 - 2023-10-17
 
